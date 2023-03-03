@@ -1,4 +1,0 @@
-"/Users/Carlos/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/223.8617.54/CLion.app/Contents/bin/cmake/mac/bin/cmake" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/Users/Carlos/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/223.8617.54/CLion.app/Contents/bin/ninja/mac/ninja" -G Ninja -S "/Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix" -B "/Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix/cmake-build-debug"
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix/cmake-build-debug

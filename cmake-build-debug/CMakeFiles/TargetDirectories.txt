@@ -1,3 +1,0 @@
-/Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix/cmake-build-debug/CMakeFiles/Matrix.dir
-/Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/Carlos/Library/CloudStorage/OneDrive-UniversidadTecnológicadePereira/SEMESTER 10/High Performance Computing/Matrix/cmake-build-debug/CMakeFiles/rebuild_cache.dir
