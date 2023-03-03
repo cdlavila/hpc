@@ -4,56 +4,41 @@
 
 double execution_time = 0.0;
 
-void multiply_matrices(int **matrix_a, int **matrix_b, int **matrix_result, int n)
-{
-    clock_t begin = clock();
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            int suma = 0;
-
+void multiply_matrices(int **matrix_a, int **matrix_b, int **matrix_result, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            int sum = 0;
             for (int k = 0; k < n; k++) {
-                suma += matrix_a[j][k] * matrix_b[k][i];
+                sum += matrix_a[j][k] * matrix_b[k][i];
             }
-            matrix_result[j][i] = suma;
+            matrix_result[j][i] = sum;
         }
     }
-
-    clock_t fin = clock();
-    execution_time = (double)(fin - begin) / CLOCKS_PER_SEC;
 }
 
 int generate_random_number(int max) {
     return rand() % max;
 }
 
-void print_matrix(int **matrix, int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
+void print_matrix(int **matrix, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             printf("%d ", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
-void read_matrix(int **matrix, int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            matrix[i][j] = generate_random_number(10);
+void read_matrices(int **matrix_a, int **matrix_b, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            matrix_a[i][j] = generate_random_number(100);
+            matrix_b[i][j] = generate_random_number(100);
         }
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     if (argc < 3) {
         printf("You must provide the two arguments: size of the matrix and show matrix (0 or 1)");
         return 0;
@@ -67,19 +52,23 @@ int main(int argc, char *argv[])
     int **matrix_b = (int **) malloc(n * sizeof(int *));
     int **matrix_result = (int **) malloc(n * sizeof(int *));
 
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         matrix_a[i] = (int *) malloc(n * sizeof(int));
         matrix_b[i] = (int *) malloc(n * sizeof(int));
         matrix_result[i] = (int *) malloc(n * sizeof(int));
     }
 
-    read_matrix(matrix_a, n);
-    read_matrix(matrix_b, n);
+    read_matrices(matrix_a, matrix_b, n);
+
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
+
     multiply_matrices(matrix_a, matrix_b, matrix_result, n);
 
-    if (show_matrix)
-    {
+    clock_gettime(CLOCK_REALTIME, &end);
+    execution_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+    if (show_matrix) {
         printf("Matrix A:\n");
         print_matrix(matrix_a, n);
         printf("Matrix B:\n");
@@ -88,8 +77,7 @@ int main(int argc, char *argv[])
         print_matrix(matrix_result, n);
     }
 
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         free(matrix_a[i]);
         free(matrix_b[i]);
         free(matrix_result[i]);
