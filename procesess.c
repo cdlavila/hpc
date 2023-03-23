@@ -1,21 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <pthread.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 int size;
-int num_threads;
+int num_processes;
 int **matrix_a;
 int **matrix_b;
 int **matrix_result;
 double execution_time = 0.0;
 
-void *multiply_matrices(void *arg) {
-    long pos_thread = (long)arg;
-    int rows_per_thread = size / num_threads;
-    int start_row = pos_thread * rows_per_thread;
-    int end_row = (pos_thread + 1) * rows_per_thread;
-
+void multiply_matrices(int start_row, int end_row) {
     for (int i = start_row; i < end_row; i++) {
         for (int j = 0; j < size; j++) {
             int add = 0;
@@ -25,7 +21,6 @@ void *multiply_matrices(void *arg) {
             matrix_result[i][j] = add;
         }
     }
-    pthread_exit(NULL);
 }
 
 void read_matrices() {
@@ -39,20 +34,18 @@ void read_matrices() {
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        printf("You must provide two arguments: size of the matrix and number of threads\n");
+        printf("You must provide two arguments: size of the matrix and number of processes\n");
         exit(1);
     }
 
     srand(time(NULL));
     size = atoi(argv[1]);
-    num_threads = atoi(argv[2]);
+    num_processes = atoi(argv[2]);
 
-    if (num_threads > size) {
-        printf("The number of threads must be less than or equal to the size of the matrix");
+    if (num_processes > size) {
+        printf("The number of processes must be less than or equal to the size of the matrix");
         exit(1);
     }
-
-    pthread_t threads[num_threads];
 
     matrix_a = (int **)malloc(size * sizeof(int *));
     matrix_b = (int **)malloc(size * sizeof(int *));
@@ -69,12 +62,26 @@ int main(int argc, char *argv[]) {
     struct timespec start, end;
     clock_gettime(CLOCK_REALTIME, &start);
 
-    for (long i = 0; i < num_threads; i++) {
-        pthread_create(&threads[i], NULL, multiply_matrices, (void *)i);
+    pid_t pid;
+    for (int i = 0; i < num_processes; i++) {
+        pid = fork();
+
+        if (pid < 0) {
+            printf("Error creating child process\n");
+            exit(1);
+        }
+        else if (pid == 0) {
+            int rows_per_process = size / num_processes;
+            int start_row = i * rows_per_process;
+            int end_row = (i + 1) * rows_per_process;
+            multiply_matrices(start_row, end_row);
+            exit(0);
+        }
     }
 
-    for (int i = 0; i < num_threads; i++) {
-        pthread_join(threads[i], NULL);
+    int status;
+    for (int i = 0; i < num_processes; i++) {
+        wait(&status);
     }
 
     clock_gettime(CLOCK_REALTIME, &end);
@@ -88,9 +95,7 @@ int main(int argc, char *argv[]) {
         free(matrix_result[i]);
     }
 
-    free(matrix_a);
-    free(matrix_b);
     free(matrix_result);
 
-    pthread_exit(NULL);
+    return 0;
 }
