@@ -16,7 +16,7 @@ do
     for i in 100 500 1000 2000 # Matrices sizes
     do
       # Execute the C program and store the output in a variable
-      output=$(mpiexec -n $n ./matrix_mpi $i)
+      output=$(mpiexec -n $n -hosts wn1,wn2,wn3 ./matrix_mpi $i)
 
       # Extract the execution time from the output
       execution_time=$(echo "$output" | grep "Execution time:" | awk '{print $3}')
