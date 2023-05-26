@@ -1,6 +1,6 @@
 #!/bin/bash
 # Loop over the number of processes
-for n in 1 2 4 8 # Number of processes
+for n in 2 4 6 8 # Number of processes
 do
   # Initialize the CSV file with table headers
   echo "|    | 100                | 500                | 1000               | 2000               |" > mpi_${n}.csv

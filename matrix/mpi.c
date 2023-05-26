@@ -1,77 +1,85 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 #include <mpi.h>
 
-double execution_time = 0.0;
-
-void multiply_matrices(int **matrix_a, int **matrix_b, int **matrix_result, int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            int sum = 0;
-            for (int k = 0; k < size; k++) {
-                sum += matrix_a[j][k] * matrix_b[k][i];
+void matrix_multiply(int n, int local_n, int *local_A, int *B, int *local_C) {
+    int i, j, k;
+    for (i = 0; i < local_n; i++) {
+        for (j = 0; j < n; j++) {
+            local_C[i * n + j] = 0;
+            for (k = 0; k < n; k++) {
+                local_C[i * n + j] += local_A[i * n + k] * B[k * n + j];
             }
-            matrix_result[j][i] = sum;
-        }
-    }
-}
-
-void read_matrices(int **matrix_a, int **matrix_b, int size) {
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            matrix_a[i][j] = rand() % 10;
-            matrix_b[i][j] = rand() % 10;
         }
     }
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("You must provide the two arguments: size of the matrix and show matrix (0 or 1)");
-        return 0;
+    if (argc != 3) {
+        printf("Uso: %s [tamaño de la matriz] [numero de procesos]\n", argv[0]);
+        return 1;
     }
 
-    srand(time(NULL));
-    int size = atoi(argv[1]);
+    int n = atoi(argv[1]);
+    int num_procs = atoi(argv[2]);
 
-    int rank, num_procs;
-    MPI_Init(&argc, &argv);
+    MPI_Init(NULL, NULL);
+
+    int rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    int **matrix_a = (int **) malloc(size * sizeof(int *));
-    int **matrix_b = (int **) malloc(size * sizeof(int *));
-    int **matrix_result = (int **) malloc(size * sizeof(int *));
-
-    for (int i = 0; i < size; i++) {
-        matrix_a[i] = (int *) malloc(size * sizeof(int));
-        matrix_b[i] = (int *) malloc(size * sizeof(int));
-        matrix_result[i] = (int *) malloc(size * sizeof(int));
+    int local_n = n / num_procs;
+    int remainder = n % num_procs;
+    if (rank < remainder) {
+        local_n++;
     }
 
-    read_matrices(matrix_a, matrix_b, size);
+    // Reserva memoria para las matrices B, local_A y local_C
+    int *B = (int *)malloc(n * n * sizeof(int));
+    int *local_A = (int *)malloc(local_n * n * sizeof(int));
+    int *local_C = (int *)malloc(local_n * n * sizeof(int));
 
-    struct timespec start, end;
-    clock_gettime(CLOCK_REALTIME, &start);
+    // Inicializa la semilla del generador de números aleatorios
+    srand(time(NULL));
 
-    multiply_matrices(matrix_a, matrix_b, matrix_result, size);
-
-    clock_gettime(CLOCK_REALTIME, &end);
-    execution_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-
-    for (int i = 0; i < size; i++) {
-        free(matrix_a[i]);
-        free(matrix_b[i]);
-        free(matrix_result[i]);
+    // Proceso 0 inicializa la matriz B con números aleatorios
+    if (rank == 0) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                B[i * n + j] = rand() % 100;
+            }
+        }
     }
-    free(matrix_a);
-    free(matrix_b);
-    free(matrix_result);
+
+    // Scatter la matriz B a todos los procesos
+    MPI_Bcast(B, n * n, MPI_INT, 0, MPI_COMM_WORLD);
+
+    // Scatter la matriz A entre los procesos
+    MPI_Scatter(B, local_n * n, MPI_INT, local_A, local_n * n, MPI_INT, 0, MPI_COMM_WORLD);
+
+    struct timeval inicio, fin;
+    gettimeofday(&inicio, NULL);
+
+    // Multiplicación de matrices local
+    matrix_multiply(n, local_n, local_A, B, local_C);
+
+    gettimeofday(&fin, NULL);
+    double tiempo_transcurrido = ((fin.tv_sec - inicio.tv_sec) * 1000000 + (fin.tv_usec - inicio.tv_usec)) / 1000000.0;
+
+    double execution_time;
+    MPI_Reduce(&tiempo_transcurrido, &execution_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
         printf("Execution time: %f seconds\n", execution_time);
     }
+
+    // Liberar memoria
+    free(B);
+    free(local_A);
+    free(local_C);
 
     MPI_Finalize();
 
