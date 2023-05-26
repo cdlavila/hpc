@@ -1,20 +1,29 @@
 #!/bin/bash
-gcc sequential.c
+gcc sequential.c -o sequential
+
+# Initialize the CSV file with table headers
+echo "|    | 100                | 500                |" > sequential.csv
+echo "|----|--------------------|--------------------|" >> sequential.csv
+
+# Loop over iterations
 for k in 1 2 3 4 5 6 7 8 9 10 # Number of iterations
 do
-  {
-      echo "Iteration: ${k}"
-      echo ""
-  } >> sequential.csv
-  for i in 100 500 1000 2000 3000  # Matrices sizes
+  # Print the iteration number
+  echo -n "| ${k}  |" >> sequential.csv
+
+  # Loop over matrix sizes
+  for i in 100 500 1000 2000 # Matrices sizes
   do
-      {
-          echo "Matrix size: ${i}"
-          ./a.out $i 0
-          echo ""
-          echo ""
-      } >> sequential.csv
-      echo "Iteration ${k}, execution finished for matrix size: ${i}"
+    # Execute the C program and store the output in a variable
+    output=$(./sequential $i 0)
+
+    # Extract the execution time from the output
+    execution_time=$(echo "$output" | grep "Execution time:" | awk '{print $3}')
+
+    # Print the execution time in the table
+    echo -n " ${execution_time} |" >> sequential.csv
   done
+
+  # Print a newline in the table
   echo "" >> sequential.csv
 done

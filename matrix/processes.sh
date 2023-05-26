@@ -6,7 +6,7 @@ do
       echo "Iteration: ${k}"
       echo ""
   } >> processes.csv
-  for i in 100 500 1000 2000 3000  # Matrices sizes
+  for i in 100 500 1000 2000  # Matrices sizes
   do
       {
          echo "Matrix size: ${i}"
