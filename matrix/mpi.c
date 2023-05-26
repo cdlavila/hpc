@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <mpi.h>
 
 double execution_time = 0.0;
 
@@ -34,6 +35,11 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     int size = atoi(argv[1]);
 
+    int rank, num_procs;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+
     int **matrix_a = (int **) malloc(size * sizeof(int *));
     int **matrix_b = (int **) malloc(size * sizeof(int *));
     int **matrix_result = (int **) malloc(size * sizeof(int *));
@@ -63,7 +69,11 @@ int main(int argc, char *argv[]) {
     free(matrix_b);
     free(matrix_result);
 
-    printf("Execution time: %f seconds", execution_time);
+    if (rank == 0) {
+        printf("Execution time: %f seconds\n", execution_time);
+    }
+
+    MPI_Finalize();
 
     return 0;
 }
