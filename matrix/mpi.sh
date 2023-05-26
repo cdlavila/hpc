@@ -3,8 +3,8 @@
 for n in 1 2 4 8 # Number of processes
 do
   # Initialize the CSV file with table headers
-  echo "|    | 100                | 500                |" > mpi_${n}.csv
-  echo "|----|--------------------|--------------------|" >> mpi_${n}.csv
+  echo "|    | 100                | 500                | 1000               | 2000               |" > mpi_${n}.csv
+  echo "|----|--------------------|--------------------|--------------------|--------------------|" >> mpi_${n}.csv
 
   # Loop over iterations
   for k in 1 2 # Number of iterations
@@ -13,7 +13,7 @@ do
     echo -n "| ${k}  |" >> mpi_${n}.csv
 
     # Loop over matrix sizes
-    for i in 100 500 # Matrices sizes
+    for i in 100 500 1000 2000 # Matrices sizes
     do
       # Execute the C program and store the output in a variable
       output=$(mpiexec -n $n ./matrix_mpi $i)
