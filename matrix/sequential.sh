@@ -2,8 +2,8 @@
 gcc sequential.c -o sequential
 
 # Initialize the CSV file with table headers
-echo "|    | 100                | 500                |" > sequential.csv
-echo "|----|--------------------|--------------------|" >> sequential.csv
+echo "|    | 100                | 500                | 1000               | 2000               |" > sequential.csv
+echo "|----|--------------------|--------------------|--------------------|--------------------|" >> sequential.csv
 
 # Loop over iterations
 for k in 1 2 3 4 5 6 7 8 9 10 # Number of iterations
@@ -22,8 +22,14 @@ do
 
     # Print the execution time in the table
     echo -n " ${execution_time} |" >> sequential.csv
+
+    # Print console output
+    echo "Iteration ${k}, execution finished for matrix size: ${i}"
   done
 
   # Print a newline in the table
   echo "" >> sequential.csv
+
+  # Print a newline in the console
+  echo
 done
